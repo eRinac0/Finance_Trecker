@@ -1,79 +1,132 @@
-import sqlite3
+import csv
+
+from cli import parse_arguments
+
+from database import (
+    create_connection,
+    create_table,
+    add_transaction,
+    get_all_transactions,
+    delete_transaction,
+    get_balance,
+    get_expense_report,
+)
 
 
-def main():
-    print("Welcome to the Finance Tracker!")
-    main_choice ={
-        "1": "Add transaction",
-        "2": "View all transactions",
-        "3": "Calculate total balance",
-        "0": "Exit"
-    }
-    conn = sqlite3.connect("finance_tracker.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT NOT NULL,
-            amount REAL NOT NULL,
-            category TEXT,
-            description TEXT,
-            date DATE
-        )
-    """)
-    conn.commit()
-    while True:
-        print("\nPlease choose an option:")
-        for key, value in main_choice.items():
-            print(f"{key}: {value}")
-        choice = input("Enter your choice: ")
-
-        if choice == "1":
-            add_transaction(conn, cursor)
-        elif choice == "2":
-            view_transactions(conn, cursor)
-        elif choice == "3":
-            calculate_balance(conn, cursor)
-        elif choice == "0":
-            print("Exiting the Finance Tracker. Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please try again.")
-
-def add_transaction(conn, cursor):
-    type = input("Enter transaction type (income/expense): ").split()[0].lower()
-    amount = float(input("Enter transaction amount: "))
-    category = input("Enter transaction category: ")
-    description = input("Enter transaction description: ")
-    date = input("Enter transaction date (YYYY-MM-DD): ")
-    cursor.execute("""
-        INSERT INTO transactions (type, amount, category, description, date)
-        VALUES (?, ?, ?, ?, ?)
-    """, (type, amount, category, description, date))
-    conn.commit()
-    print("Transaction added successfully!")
-
-def view_transactions(conn, cursor):
-    cursor.execute("SELECT * FROM transactions")
-    transactions = cursor.fetchall()
+def print_transactions(transactions):
     if not transactions:
         print("No transactions found.")
         return
-    print("\nAll Transactions:")
-    for i, transaction in enumerate(transactions, start=1):
-        print(f"{i}. {transaction[5]} - {transaction[1].capitalize()} - {transaction[4]} - ${transaction[2]:.2f} - {transaction[3]}")
 
-def calculate_balance(conn, cursor):
-    cursor.execute("SELECT SUM(amount) FROM transactions WHERE type = 'income'")
-    total_income = cursor.fetchone()[0] or 0
-    cursor.execute("SELECT SUM(amount) FROM transactions WHERE type = 'expense'")
-    total_expense = cursor.fetchone()[0] or 0
-    balance = total_income - total_expense
-    print(f"\nTotal Income: ${total_income:.2f}")
-    print(f"Total Expense: ${total_expense:.2f}")
-    print(f"Total Balance: ${balance:.2f}")
-    
+    print("\nAll transactions:")
+
+    for transaction in transactions:
+        transaction_id = transaction[0]
+        transaction_type = transaction[1]
+        amount = transaction[2]
+        category = transaction[3]
+        description = transaction[4]
+        date = transaction[5]
+
+        print(
+            f"{transaction_id}. {date} | "
+            f"{transaction_type.capitalize()} | "
+            f"{category} | "
+            f"${amount:.2f} | "
+            f"{description}"
+        )
 
 
-main()
+def main():
+    args = parse_arguments()
 
+    conn = create_connection()
+    create_table(conn)
+
+    try:
+        if args.command == "add":
+            add_transaction(
+                conn,
+                args.type,
+                args.amount,
+                args.category,
+                args.description,
+            )
+            print("Transaction added successfully!")
+
+        elif args.command == "list":
+            transactions = get_all_transactions(conn)
+            print_transactions(transactions)
+
+        elif args.command == "delete":
+            transactions = get_all_transactions(conn)
+            print_transactions(transactions)
+
+            if not transactions:
+                return
+
+            transaction_id = int(
+                input("Enter the ID of the transaction to delete: ")
+            )
+
+            was_deleted = delete_transaction(conn, transaction_id)
+
+            if was_deleted:
+                print("Transaction deleted successfully!")
+            else:
+                print("Transaction with this ID was not found.")
+
+        elif args.command == "balance":
+            total_income, total_expense = get_balance(conn)
+            balance = total_income - total_expense
+
+            print(f"\nTotal income: ${total_income:.2f}")
+            print(f"Total expense: ${total_expense:.2f}")
+            print(f"Total balance: ${balance:.2f}")
+
+        elif args.command == "report":
+            report = get_expense_report(conn)
+
+            if not report:
+                print("No expense transactions found.")
+                return
+
+            print("\nExpenses by category:")
+
+            for category, total in report:
+                print(f"{category}: ${total:.2f}")
+
+        elif args.command == "export":
+            transactions = get_all_transactions(conn)
+
+            if not transactions:
+                print("No transactions found.")
+                return
+
+            with open(
+                "transactions_export.csv",
+                "w",
+                newline="",
+                encoding="utf-8"
+            ) as file:
+                writer = csv.writer(file)
+
+                writer.writerow([
+                    "ID",
+                    "Type",
+                    "Amount",
+                    "Category",
+                    "Description",
+                    "Date",
+                ])
+
+                writer.writerows(transactions)
+
+            print("Transactions exported to transactions_export.csv")
+
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    main()
