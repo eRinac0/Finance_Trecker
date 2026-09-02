@@ -1,5 +1,5 @@
 import csv
-
+from validators import validate_transaction
 from cli import parse_arguments
 
 from database import (
@@ -45,13 +45,27 @@ def main():
 
     try:
         if args.command == "add":
+            try:
+                category, description = validate_transaction(
+                    args.type,
+                    args.amount,
+                    args.category,
+                    args.description
+                )
+
+            except ValueError as error:
+
+                print(f"Validation error: {error}")
+                return
+
             add_transaction(
                 conn,
                 args.type,
                 args.amount,
-                args.category,
-                args.description,
+                category,
+                description
             )
+
             print("Transaction added successfully!")
 
         elif args.command == "list":
@@ -65,9 +79,19 @@ def main():
             if not transactions:
                 return
 
-            transaction_id = int(
+            try:
+                transaction_id = int(
                 input("Enter the ID of the transaction to delete: ")
-            )
+                )
+
+                if transaction_id <= 0:
+                    print("ID must be a positive number.")
+                    return
+            except ValueError:
+                print("ID must be a whole number, for example: 3.")
+                return
+
+
 
             was_deleted = delete_transaction(conn, transaction_id)
 

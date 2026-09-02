@@ -1,7 +1,9 @@
 import sqlite3
+from pathlib import Path
 
 
-DB_NAME = "finance_tracker.db"
+PROJECT_FOLDER = Path(__file__).resolve().parent
+DB_NAME = PROJECT_FOLDER / "finance_tracker.db"
 
 
 def create_connection():
