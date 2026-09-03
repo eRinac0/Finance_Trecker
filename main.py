@@ -115,7 +115,7 @@ def main():
                 print("No expense transactions found.")
                 return
 
-            print("\nExpenses by category:")
+            print("\nTop-3 most expensive expenses by category:")
 
             for category, total in report:
                 print(f"{category}: ${total:.2f}")

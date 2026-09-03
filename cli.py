@@ -56,7 +56,8 @@ def parse_arguments():
 
     subparsers.add_parser(
         "report",
-        help="Generate category-wise report"
+         help="Generate monthly report"
     )
 
+   
     return parser.parse_args()
