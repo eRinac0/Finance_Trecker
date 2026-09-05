@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="470" viewBox="0 0 900 470">
+  <rect width="900" height="470" rx="12" fill="#1e1e1e"/>
+  <rect width="900" height="42" rx="12" fill="#303030"/>
+  <circle cx="28" cy="21" r="7" fill="#ff5f56"/><circle cx="52" cy="21" r="7" fill="#ffbd2e"/><circle cx="76" cy="21" r="7" fill="#27c93f"/>
+  <g fill="#d4d4d4" font-family="Consolas, monospace" font-size="19">
+    <text x="28" y="82" fill="#9cdcfe">PS C:\Finance_Tracker&gt; <tspan fill="#d4d4d4">py main.py report --month 2026-09</tspan></text>
+    <text x="28" y="124">Report for 2026-09</text>
+    <text x="28" y="158">Income: 100 000.00 RUB</text>
+    <text x="28" y="192">Expenses: 32 400.00 RUB</text>
+    <text x="28" y="226">Balance: 67 600.00 RUB</text>
+    <text x="28" y="278">Top expense categories:</text>
+    <text x="28" y="312">1. Food — 12 300.00 RUB</text>
+    <text x="28" y="346">2. Housing — 10 000.00 RUB</text>
+    <text x="28" y="380">3. Transport — 4 200.00 RUB</text>
+    <text x="28" y="432" fill="#9cdcfe">PS C:\Finance_Tracker&gt; </text>
+  </g>
+</svg>

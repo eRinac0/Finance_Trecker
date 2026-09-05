@@ -38,10 +38,20 @@ def parse_arguments():
         default="",
         help="Description"
     )
+    add_parser.add_argument(
+        "--date",
+        help="Transaction date in YYYY-MM-DD format (default: today)"
+    )
 
-    subparsers.add_parser(
+    list_parser = subparsers.add_parser(
         "list",
         help="List all transactions"
+    )
+    add_filter_arguments(list_parser)
+    list_parser.add_argument(
+        "--export",
+        metavar="FILE",
+        help="Save the listed transactions to a CSV file"
     )
 
     subparsers.add_parser(
@@ -49,15 +59,43 @@ def parse_arguments():
         help="Delete a transaction"
     )
 
-    subparsers.add_parser(
+    balance_parser = subparsers.add_parser(
         "balance",
         help="Calculate total balance"
     )
-
-    subparsers.add_parser(
-        "report",
-         help="Generate monthly report"
+    balance_parser.add_argument(
+        "--month",
+        help="Month in YYYY-MM format (default: all time)"
     )
 
-   
+    report_parser = subparsers.add_parser(
+        "report",
+        help="Generate monthly report"
+    )
+    report_parser.add_argument(
+        "--month",
+        required=True,
+        help="Month in YYYY-MM format"
+    )
+
     return parser.parse_args()
+
+
+def add_filter_arguments(parser):
+    """Add shared filters for commands that return transaction lists."""
+    parser.add_argument(
+        "--from",
+        dest="date_from",
+        metavar="YYYY-MM-DD",
+        help="Include transactions from this date"
+    )
+    parser.add_argument(
+        "--to",
+        dest="date_to",
+        metavar="YYYY-MM-DD",
+        help="Include transactions through this date"
+    )
+    parser.add_argument(
+        "--category",
+        help="Filter by category (case-insensitive)"
+    )

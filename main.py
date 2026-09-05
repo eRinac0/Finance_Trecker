@@ -1,5 +1,5 @@
 import csv
-from validators import validate_transaction
+from validators import validate_date, validate_transaction
 from cli import parse_arguments
 
 from database import (
@@ -7,10 +7,22 @@ from database import (
     create_table,
     add_transaction,
     get_all_transactions,
+    get_transactions,
     delete_transaction,
     get_balance,
     get_expense_report,
 )
+
+
+def format_money(amount):
+    return f"{amount:,.2f}".replace(",", " ") + " EUR"
+
+
+def export_transactions(transactions, file_name):
+    with open(file_name, "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["ID", "Type", "Amount", "Category", "Description", "Date"])
+        writer.writerows(transactions)
 
 
 def print_transactions(transactions):
@@ -32,7 +44,7 @@ def print_transactions(transactions):
             f"{transaction_id}. {date} | "
             f"{transaction_type.capitalize()} | "
             f"{category} | "
-            f"${amount:.2f} | "
+            f"{format_money(amount)} | "
             f"{description}"
         )
 
@@ -52,6 +64,7 @@ def main():
                     args.category,
                     args.description
                 )
+                transaction_date = validate_date(args.date)
 
             except ValueError as error:
 
@@ -63,14 +76,26 @@ def main():
                 args.type,
                 args.amount,
                 category,
-                description
+                description,
+                transaction_date
             )
 
             print("Transaction added successfully!")
 
         elif args.command == "list":
-            transactions = get_all_transactions(conn)
+            try:
+                date_from = validate_date(args.date_from)
+                date_to = validate_date(args.date_to)
+            except ValueError as error:
+                print(f"Validation error: {error}")
+                return
+            transactions = get_transactions(
+                conn, date_from, date_to, args.category
+            )
             print_transactions(transactions)
+            if args.export:
+                export_transactions(transactions, args.export)
+                print(f"Transactions exported to {args.export}")
 
         elif args.command == "delete":
             transactions = get_all_transactions(conn)
@@ -101,52 +126,37 @@ def main():
                 print("Transaction with this ID was not found.")
 
         elif args.command == "balance":
-            total_income, total_expense = get_balance(conn)
+            try:
+                month = validate_date(args.month, allow_month=True)
+            except ValueError as error:
+                print(f"Validation error: {error}")
+                return
+            total_income, total_expense = get_balance(conn, month)
             balance = total_income - total_expense
 
-            print(f"\nTotal income: ${total_income:.2f}")
-            print(f"Total expense: ${total_expense:.2f}")
-            print(f"Total balance: ${balance:.2f}")
+            print(f"\nTotal income: {format_money(total_income)}")
+            print(f"Total expenses: {format_money(total_expense)}")
+            print(f"Total balance: {format_money(balance)}")
 
         elif args.command == "report":
-            report = get_expense_report(conn)
+            try:
+                month = validate_date(args.month, allow_month=True)
+            except ValueError as error:
+                print(f"Validation error: {error}")
+                return
+            total_income, total_expense = get_balance(conn, month)
+            balance = total_income - total_expense
+            report = get_expense_report(conn, month)
 
+            print(f"\nReport for {month}")
+            print(f"Income: {format_money(total_income)}")
+            print(f"Expenses: {format_money(total_expense)}")
+            print(f"Balance: {format_money(balance)}")
+            print("\nTop expense categories:")
             if not report:
-                print("No expense transactions found.")
-                return
-
-            print("\nTop-3 most expensive expenses by category:")
-
-            for category, total in report:
-                print(f"{category}: ${total:.2f}")
-
-        elif args.command == "export":
-            transactions = get_all_transactions(conn)
-
-            if not transactions:
-                print("No transactions found.")
-                return
-
-            with open(
-                "transactions_export.csv",
-                "w",
-                newline="",
-                encoding="utf-8"
-            ) as file:
-                writer = csv.writer(file)
-
-                writer.writerow([
-                    "ID",
-                    "Type",
-                    "Amount",
-                    "Category",
-                    "Description",
-                    "Date",
-                ])
-
-                writer.writerows(transactions)
-
-            print("Transactions exported to transactions_export.csv")
+                print("No expenses found for this period.")
+            for index, (category, total) in enumerate(report, start=1):
+                print(f"{index}. {category} — {format_money(total)}")
 
     finally:
         conn.close()
