@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Transactions · Finance Tracker{% endblock %}
+{% block heading %}Transactions{% endblock %}
+{% block content %}
+<section class="panel filter-panel">
+    <form class="filters" method="get">
+        <label>From<input type="date" name="from" value="{{ filters.date_from }}"></label>
+        <label>To<input type="date" name="to" value="{{ filters.date_to }}"></label>
+        <label>Category<input type="text" name="category" value="{{ filters.category }}" placeholder="e.g. Food"></label>
+        <button class="button button-primary">Apply filters</button>
+        <a class="button button-ghost" href="{{ url_for('transactions') }}">Reset</a>
+    </form>
+</section>
+<section class="panel table-panel">
+    <div class="panel-heading">
+        <div>
+            <p class="eyebrow">HISTORY</p>
+            <h2>{{ transactions|length }} transaction{{ '' if transactions|length == 1 else 's' }}</h2>
+        </div>
+    </div>
+    {% if transactions %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transactions %}
+                        <tr>
+                            <td>{{ item[5] }}</td>
+                            <td><span class="category-pill">{{ item[3] }}</span></td>
+                            <td>{{ item[4] or '—' }}</td>
+                            <td><span class="type-label {{ item[1] }}">{{ item[1] }}</span></td>
+                            <td class="amount {{ item[1] }}">
+                                {{ '+' if item[1] == 'income' else '−' }}{{ item[2]|money }}
+                            </td>
+                            <td>
+                                <form method="post" action="{{ url_for('delete', transaction_id=item[0]) }}" onsubmit="return confirm('Delete this transaction?');">
+                                    <button class="delete-button" aria-label="Delete">×</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">No transactions match these filters.</div>
+    {% endif %}
+</section>
+{% endblock %}

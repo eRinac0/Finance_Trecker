@@ -34,6 +34,8 @@ def validate_date(value, allow_month=False):
         parsed = date.fromisoformat(f"{value}-01" if allow_month else value)
     except ValueError as error:
         label = "month" if allow_month else "date"
-        raise ValueError(f"{label.capitalize()} must use {expected_format} format.") from error
+        raise ValueError(
+            f"{label.capitalize()} must use {expected_format} format."
+        ) from error
 
     return parsed.strftime(expected_format)

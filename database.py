@@ -11,7 +11,8 @@ def create_connection():
 
 
 def create_table(conn):
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT NOT NULL,
@@ -20,7 +21,8 @@ def create_table(conn):
             description TEXT,
             date DATE
         )
-    """)
+        """
+    )
     conn.commit()
 
 
@@ -28,10 +30,13 @@ def add_transaction(
     conn, transaction_type, amount, category, description, transaction_date=None
 ):
     date_value = transaction_date or None
-    conn.execute("""
+    conn.execute(
+        """
         INSERT INTO transactions (type, amount, category, description, date)
         VALUES (?, ?, ?, ?, COALESCE(?, DATE('now')))
-    """, (transaction_type, amount, category, description, date_value))
+        """,
+        (transaction_type, amount, category, description, date_value),
+    )
 
     conn.commit()
 
@@ -56,11 +61,14 @@ def get_transactions(conn, date_from=None, date_to=None, category=None):
         parameters.append(category.strip())
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-    cursor = conn.execute("""
+    cursor = conn.execute(
+        """
         SELECT * FROM transactions
         {where_clause}
         ORDER BY date DESC, id DESC
-    """.format(where_clause=where_clause), parameters)
+        """.format(where_clause=where_clause),
+        parameters,
+    )
 
     return cursor.fetchall()
 
@@ -85,13 +93,16 @@ def get_balance(conn, month=None):
         parameters.append(month)
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
-    cursor = conn.execute("""
+    cursor = conn.execute(
+        """
         SELECT
             COALESCE(SUM(CASE WHEN type = 'income' THEN amount END), 0),
             COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0)
         FROM transactions
         {where_clause}
-    """.format(where_clause=where_clause), parameters)
+        """.format(where_clause=where_clause),
+        parameters,
+    )
     return cursor.fetchone()
 
 
@@ -102,13 +113,16 @@ def get_expense_report(conn, month=None, limit=3):
         conditions.append("strftime('%Y-%m', date) = ?")
         parameters.append(month)
 
-    cursor = conn.execute("""
+    cursor = conn.execute(
+        """
         SELECT category, SUM(amount)
         FROM transactions
         WHERE {conditions}
         GROUP BY category
         ORDER BY SUM(amount) DESC
         LIMIT ?
-    """.format(conditions=" AND ".join(conditions)), parameters + [limit])
+        """.format(conditions=" AND ".join(conditions)),
+        parameters + [limit],
+    )
 
     return cursor.fetchall()

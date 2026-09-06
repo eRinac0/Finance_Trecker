@@ -1,23 +1,74 @@
 # Finance Tracker
 
-Finance Tracker is a small command-line application for recording personal income and expenses. It stores transactions in SQLite, filters them by date or category, produces monthly summaries, and exports selected records to CSV.
+Finance Tracker is a personal-finance application with a Flask web interface and a command-line interface. It stores income and expenses in SQLite, provides filters and monthly reports, and exports selected records to CSV.
+
+The web interface includes a dashboard, transaction history, filters, an add-transaction form, monthly reports, and deletion of transactions. Both interfaces work with the same SQLite database.
 
 ## Technologies
 
 - Python 3.10+
 - SQLite (`sqlite3` from the standard library)
+- Flask and Jinja templates
+- HTML5 and responsive CSS
 - `argparse` for the command-line interface
 - `unittest` for automated tests
 
-## Installation and launch
+## Installation and web launch
 
-Clone the repository, then run the application from its folder:
+Clone the repository and open its folder in PowerShell:
+
+```powershell
+cd C:\path\to\Finance_Tracker
+```
+
+Create and activate a virtual environment, then install the dependencies:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+py -m pip install -r requirements.txt
+```
+
+Start the local web server:
+
+```powershell
+py app.py
+```
+
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in a browser. The SQLite database (`finance_tracker.db`) is created automatically when the application first runs.
+
+## Web pages
+
+| Page | URL | What it does |
+| --- | --- | --- |
+| Dashboard | `/` | Shows income, expenses, balance, top categories, and recent transactions. |
+| Transactions | `/transactions` | Shows every transaction and filters by date range or category. |
+| Add transaction | `/add` | Adds income or an expense after server-side validation. |
+| Monthly report | `/report?month=YYYY-MM` | Shows a month’s totals, balance, and three largest expense categories. |
+
+The transaction page also supports deletion. A confirmation dialog appears before the request is sent.
+
+## Project structure
+
+```text
+Finance_Tracker/
+├── app.py                 # Flask routes and web behaviour
+├── database.py            # SQLite queries and database connection
+├── validators.py          # Transaction and date validation
+├── main.py                # Command-line interface
+├── templates/             # Jinja HTML templates
+├── static/style.css       # Responsive interface styles
+├── tests/                 # Unit tests
+└── finance_tracker.db     # Local SQLite database
+```
+
+## Command-line interface
+
+The original terminal version remains available. It uses the same database as the web app.
 
 ```powershell
 py main.py --help
 ```
-
-No third-party packages are required. The SQLite database (`finance_tracker.db`) is created automatically on first launch.
 
 ## Commands
 
@@ -29,13 +80,17 @@ No third-party packages are required. The SQLite database (`finance_tracker.db`)
 | `balance [--month YYYY-MM]` | Show income, expenses, and balance for all time or for one month. |
 | `report --month YYYY-MM` | Show a monthly report and the top three expense categories. |
 
-Run the test suite with:
+## Tests
+
+The test suite covers validation, database creation and reading, filters, balance calculations, and the top-three expense report.
+
+Run it with:
 
 ```powershell
 py -m unittest discover -s tests -v
 ```
 
-## Examples
+## Command-line examples
 
 Add an income and an expense with explicit dates:
 
@@ -71,4 +126,5 @@ Top expense categories:
 - Configurable currency and locale-aware formatting
 - Edit existing transactions
 - Budget limits and notifications by category
-- Charts and a simple web interface
+- Charts for income and expense trends
+- User accounts and authentication

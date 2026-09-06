@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 transactions_export.csv
 /.venv
+cspell.json

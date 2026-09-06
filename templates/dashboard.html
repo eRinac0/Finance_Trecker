@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Finance Tracker{% endblock %}
+{% block heading %}Good to see you{% endblock %}
+{% block content %}
+<section class="month-bar">
+    <div>
+        <strong>Monthly overview</strong>
+        <span>Numbers for {{ month }}</span>
+    </div>
+    <form method="get">
+        <input type="month" name="month" value="{{ month }}">
+        <button class="button button-secondary">View month</button>
+    </form>
+</section>
+<section class="metric-grid">
+    <article class="metric-card income">
+        <span>↗</span>
+        <p>Income</p>
+        <h2>{{ income|money }}</h2>
+        <small>Received this month</small>
+    </article>
+    <article class="metric-card expense">
+        <span>↘</span>
+        <p>Expenses</p>
+        <h2>{{ expenses|money }}</h2>
+        <small>Spent this month</small>
+    </article>
+    <article class="metric-card balance">
+        <span>◇</span>
+        <p>Balance</p>
+        <h2>{{ balance|money }}</h2>
+        <small>Income minus expenses</small>
+    </article>
+</section>
+<section class="content-grid">
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">SPENDING</p>
+                <h2>Top categories</h2>
+            </div>
+            <a href="{{ url_for('report', month=month) }}">Full report →</a>
+        </div>
+        {% if top_categories %}
+        <ol class="category-list">
+            {% for category, total in top_categories %}
+            <li>
+                <span>0{{ loop.index }}</span>
+                <div>
+                    <strong>{{ category }}</strong>
+                    <progress class="progress" value="{{ total }}" max="{{ expenses }}"></progress>
+                </div>
+                <strong>{{ total|money }}</strong>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <div class="empty-state">No expenses recorded for this month.</div>
+        {% endif %}
+    </article>
+    <article class="panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">LATEST</p>
+                <h2>Recent transactions</h2>
+            </div>
+            <a href="{{ url_for('transactions') }}">See all →</a>
+        </div>
+        {% if recent_transactions %}
+        <div class="compact-list">
+            {% for item in recent_transactions %}
+            <div>
+                <i class="type-dot {{ item[1] }}"></i>
+                <div>
+                    <strong>{{ item[3] }}</strong>
+                    <small>{{ item[5] }}</small>
+                </div>
+                <b class="{{ item[1] }}">
+                    {{ '+' if item[1] == 'income' else '−' }}{{ item[2]|money }}
+                </b>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">Start by adding your first transaction.</div>
+        {% endif %}
+    </article>
+</section>
+
+{% endblock %}

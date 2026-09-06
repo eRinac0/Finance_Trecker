@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Add transaction · Finance Tracker{% endblock %}
+{% block heading %}Add transaction{% endblock %}
+{% block content %}
+<section class="form-layout">
+    <form class="panel transaction-form" method="post">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">NEW ENTRY</p>
+                <h2>Record your money movement</h2>
+            </div>
+        </div>
+        <fieldset>
+            <legend>Transaction type</legend>
+            <div class="type-picker">
+                <label>
+                    <input type="radio" name="type" value="expense" {% if form.get('type', 'expense') == 'expense' %}checked{% endif %}>
+                    <span>↘ Expense</span>
+                </label>
+                <label>
+                    <input type="radio" name="type" value="income" {% if form.get('type') == 'income' %}checked{% endif %}>
+                    <span>↗ Income</span>
+                </label>
+            </div>
+        </fieldset>
+        <div class="form-grid">
+            <label>Amount<input name="amount" type="number" min="0.01" step="0.01" value="{{ form.get('amount', '') }}" placeholder="0.00" required></label>
+            <label>Date<input name="date" type="date" value="{{ form.get('date', '') }}" required></label>
+            <label>Category<input name="category" value="{{ form.get('category', '') }}" placeholder="e.g. Food" required></label>
+            <label>Description <em>optional</em><input name="description" value="{{ form.get('description', '') }}" placeholder="What was it for?"></label>
+        </div>
+        <div class="form-actions">
+            <a class="button button-ghost" href="{{ url_for('transactions') }}">Cancel</a>
+            <button class="button button-primary">Save transaction</button>
+        </div>
+        </form>
+        <aside class="tip-card">
+            <span>✦</span>
+            <h2>Small habits, clear picture.</h2>
+            <p>Adding each transaction takes a moment and makes your monthly report useful.</p>
+        </aside>
+    </section>
+{% endblock %}

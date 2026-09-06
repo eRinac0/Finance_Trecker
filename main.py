@@ -67,7 +67,6 @@ def main():
                 transaction_date = validate_date(args.date)
 
             except ValueError as error:
-
                 print(f"Validation error: {error}")
                 return
 
@@ -106,7 +105,7 @@ def main():
 
             try:
                 transaction_id = int(
-                input("Enter the ID of the transaction to delete: ")
+                    input("Enter the ID of the transaction to delete: ")
                 )
 
                 if transaction_id <= 0:
@@ -115,8 +114,6 @@ def main():
             except ValueError:
                 print("ID must be a whole number, for example: 3.")
                 return
-
-
 
             was_deleted = delete_transaction(conn, transaction_id)
 
